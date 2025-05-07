@@ -1,0 +1,219 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model applied_coupon {
+  Order_id  Int
+  Coupon_id Int
+  orders    orders @relation(fields: [Order_id], references: [Order_id], onDelete: NoAction, onUpdate: NoAction, map: "applied_coupon_ibfk_1")
+  coupon    coupon @relation(fields: [Coupon_id], references: [Coupon_id], onDelete: NoAction, onUpdate: NoAction, map: "applied_coupon_ibfk_2")
+
+  @@id([Order_id, Coupon_id])
+  @@index([Coupon_id], map: "Coupon_id")
+}
+
+model category {
+  Category_id Int       @id @default(autoincrement())
+  Name        String?   @db.VarChar(100)
+  product     product[]
+}
+
+model coupon {
+  Coupon_id        Int              @id @default(autoincrement())
+  Code             Int?
+  Discount_Percent Int?
+  Expiration_Date  DateTime?        @db.Date
+  applied_coupon   applied_coupon[]
+}
+
+model escrow_transactions {
+  Escrow_id  Int     @id @default(autoincrement())
+  User_id    Int?
+  Shop_id    Int?
+  payment_id Int?    @unique(map: "payment_id")
+  Amount     Int?
+  Status     String? @db.VarChar(100)
+  user       user?   @relation(fields: [User_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "escrow_transactions_ibfk_1")
+  shop       shop?   @relation(fields: [Shop_id], references: [Shop_id], onDelete: NoAction, onUpdate: NoAction, map: "escrow_transactions_ibfk_2")
+
+  @@index([Shop_id], map: "Shop_id")
+  @@index([User_id], map: "User_id")
+}
+
+model order_item {
+  Order_id   Int
+  Product_id Int
+  Quantity   Int?
+  Price      Int?
+  orders     orders  @relation(fields: [Order_id], references: [Order_id], onDelete: NoAction, onUpdate: NoAction, map: "order_item_ibfk_1")
+  product    product @relation(fields: [Product_id], references: [Product_id], onDelete: NoAction, onUpdate: NoAction, map: "order_item_ibfk_2")
+
+  @@id([Order_id, Product_id])
+  @@index([Product_id], map: "Product_id")
+}
+
+model orders {
+  Order_id                Int              @id @default(autoincrement())
+  User_id                 Int?
+  Order_Date              DateTime?        @db.Date
+  Status                  String?          @db.VarChar(100)
+  Tracking_Number         Int?
+  Estimated_Delivery_Date DateTime?        @db.Date
+  Total_Price             Int?
+  applied_coupon          applied_coupon[]
+  order_item              order_item[]
+  user                    user?            @relation(fields: [User_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "orders_ibfk_1")
+  payment                 payment[]
+
+  @@index([User_id], map: "User_id")
+}
+
+model owner {
+  Owner_Id  Int     @id @default(autoincrement())
+  Full_Name String? @db.VarChar(255)
+  Email     String? @db.VarChar(100)
+  Phone     String? @db.VarChar(255)
+  user_id   Int?
+  user      user?   @relation(fields: [user_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_owner_user")
+  shop      shop[]
+
+  @@index([user_id], map: "fk_owner_user")
+}
+
+model payment {
+  Payment_id     Int       @id @default(autoincrement())
+  Order_id       Int?
+  User_id        Int?
+  Payment_method String?   @db.VarChar(100)
+  Payment_status String?   @db.VarChar(100)
+  Amount         Decimal?  @db.Decimal(10, 0)
+  Payment_date   DateTime? @default(now()) @db.DateTime(0)
+  orders         orders?   @relation(fields: [Order_id], references: [Order_id], onDelete: NoAction, onUpdate: NoAction, map: "payment_ibfk_1")
+  user           user?     @relation(fields: [User_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "payment_ibfk_2")
+
+  @@index([Order_id], map: "Order_id")
+  @@index([User_id], map: "User_id")
+}
+
+model product {
+  Product_id   Int          @id @default(autoincrement())
+  Shop_id      Int?
+  Category_id  Int?
+  Product_name String?      @db.VarChar(100)
+  Description  String?      @db.VarChar(255)
+  Price        Int?
+  Stock        Int?
+  cart         cart[]
+  order_item   order_item[]
+  shop         shop?        @relation(fields: [Shop_id], references: [Shop_id], onDelete: NoAction, onUpdate: NoAction, map: "product_ibfk_1")
+  category     category?    @relation(fields: [Category_id], references: [Category_id], onDelete: NoAction, onUpdate: NoAction, map: "product_ibfk_2")
+  reviews      reviews[]
+
+  @@index([Category_id], map: "Category_id")
+  @@index([Shop_id], map: "Shop_id")
+}
+
+model reviews {
+  Review_id    Int       @id @default(autoincrement())
+  User_id      Int?
+  Product_id   Int?
+  Rating       Int?
+  Descriptions String?   @db.VarChar(255)
+  Created_at   DateTime? @db.Date
+  user         user?     @relation(fields: [User_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "reviews_ibfk_1")
+  product      product?  @relation(fields: [Product_id], references: [Product_id], onDelete: NoAction, onUpdate: NoAction, map: "reviews_ibfk_2")
+
+  @@index([Product_id], map: "Product_id")
+  @@index([User_id], map: "User_id")
+}
+
+model shop {
+  Shop_id             Int                   @id @default(autoincrement())
+  OwnerId             Int?
+  Shop_name           String?               @db.VarChar(100)
+  Email               String?               @db.VarChar(255)
+  Website             String?               @db.VarChar(255)
+  escrow_transactions escrow_transactions[]
+  product             product[]
+  owner               owner?                @relation(fields: [OwnerId], references: [Owner_Id], onDelete: NoAction, onUpdate: NoAction, map: "shop_ibfk_1")
+  shop_bank_account   shop_bank_account[]
+  shop_location       shop_location[]
+  shop_phone          shop_phone[]
+
+  @@index([OwnerId], map: "OwnerId")
+}
+
+model shop_bank_account {
+  Account_id    Int     @id @default(autoincrement())
+  Shop_id       Int?
+  Card_Number   Int?
+  Name_On_Card  String? @db.VarChar(100)
+  Expiray_Month String? @db.VarChar(255)
+  Expiray_Year  String? @db.VarChar(255)
+  shop          shop?   @relation(fields: [Shop_id], references: [Shop_id], onDelete: NoAction, onUpdate: NoAction, map: "shop_bank_account_ibfk_1")
+
+  @@index([Shop_id], map: "Shop_id")
+}
+
+model shop_location {
+  Shop_id  Int
+  Location String @db.VarChar(15)
+  shop     shop   @relation(fields: [Shop_id], references: [Shop_id], onDelete: NoAction, onUpdate: NoAction, map: "shop_location_ibfk_1")
+
+  @@id([Shop_id, Location])
+}
+
+model shop_phone {
+  Shop_id Int
+  Phone   String @db.VarChar(15)
+  shop    shop   @relation(fields: [Shop_id], references: [Shop_id], onDelete: NoAction, onUpdate: NoAction, map: "shop_phone_ibfk_1")
+
+  @@id([Shop_id, Phone])
+}
+
+model user {
+  user_id             Int                   @id @default(autoincrement())
+  Full_Name           String?               @db.VarChar(50)
+  Email               String?               @db.VarChar(255)
+  ssn                 String?               @db.VarChar(100)
+  password            String?               @db.VarChar(255)
+  EGP                 Int?
+  cart                cart[]
+  escrow_transactions escrow_transactions[]
+  orders              orders[]
+  owner               owner[]
+  payment             payment[]
+  reviews             reviews[]
+  user_bank_account   user_bank_account[]
+}
+
+model user_bank_account {
+  account_id    Int     @id @default(autoincrement())
+  UserId        Int?
+  Card_Number   Int?
+  Name_On_Card  String? @db.VarChar(100)
+  Expiray_Month String? @db.VarChar(255)
+  Expiray_Year  String? @db.VarChar(255)
+  user          user?   @relation(fields: [UserId], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "user_bank_account_ibfk_1")
+
+  @@index([UserId], map: "UserId")
+}
+
+model cart {
+  Cart_id    Int       @id @default(autoincrement())
+  User_id    Int?
+  Product_id Int?
+  Quantity   Int?
+  Added_At   DateTime? @default(now()) @db.DateTime(0)
+  user       user?     @relation(fields: [User_id], references: [user_id], onDelete: NoAction, onUpdate: NoAction, map: "cart_ibfk_1")
+  product    product?  @relation(fields: [Product_id], references: [Product_id], onDelete: NoAction, onUpdate: NoAction, map: "cart_ibfk_2")
+
+  @@index([Product_id], map: "Product_id")
+  @@index([User_id], map: "User_id")
+}

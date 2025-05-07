@@ -1,0 +1,422 @@
+E-Commerce Platform API Documentation
+=====================================
+
+Table of Contents
+-----------------
+1. Authentication
+   - User Signup
+   - User Login
+2. Seller Functions
+   - Seller Signup
+   - Add Shop
+   - Add Shop Location
+   - Add Shop Phone
+   - Add Shop Bank Account
+   - Add Product
+   - Edit Product
+3. Product Management
+   - Get All Products
+   - Get Product by ID
+   - Get Products by Shop ID
+4. Shop Management
+   - Get All Shops
+   - Get Shop by ID
+5. User Functions
+   - Add Credit Card
+   - Get Credit Cards
+   - Add to Cart
+   - Get Cart Items
+6. Error Handling
+
+================================================================================
+AUTHENTICATION
+================================================================================
+
+1. User Signup
+Endpoint: POST /signup
+Description: Register a new user account
+Request Body:
+{
+  "fullName": "John Doe",
+  "email": "john@example.com",
+  "ssn": "123456789",
+  "password": "securepassword123",
+  "confirmPassword": "securepassword123"
+}
+
+Success Response (201):
+{
+  "message": "User created successfully!",
+  "user": {
+    "id": 1,
+    "fullName": "John Doe",
+    "email": "john@example.com"
+  }
+}
+
+2. User Login
+Endpoint: POST /login
+Description: Authenticate user and return JWT token
+Request Body:
+{
+  "email": "john@example.com",
+  "password": "securepassword123"
+}
+
+Success Response (200):
+{
+  "message": "Login successful!",
+  "user": {
+    "id": 1,
+    "fullName": "John Doe",
+    "email": "john@example.com"
+  }
+}
+Notes: Sets an HTTP-only cookie with the JWT token valid for 10 hours
+
+================================================================================
+SELLER FUNCTIONS
+================================================================================
+
+1. Seller Signup
+Endpoint: POST /seller/signup
+Headers: Authorization: Bearer <token>
+Request Body:
+{
+  "fullName": "Seller Name",
+  "email": "seller@example.com",
+  "phoneNumber": "1234567890"
+}
+
+2. Add Shop
+Endpoint: POST /seller/addshop
+Headers: Authorization: Bearer <token>
+Request Body:
+{
+  "Shop_name": "My Awesome Shop",
+  "Email": "shop@example.com",
+  "Website": "https://myawesomeshop.com"
+}
+
+3. Add Shop Location
+Endpoint: POST /seller/shop/location/:id
+Headers: Authorization: Bearer <token>
+Params: id - Shop ID
+Request Body:
+{
+  "Location": "123 Main St, City, Country"
+}
+
+4. Add Shop Phone
+Endpoint: POST /seller/shop/phone/:id
+Headers: Authorization: Bearer <token>
+Params: id - Shop ID
+Request Body:
+{
+  "Phones": ["+1234567890", "+0987654321"]
+}
+
+5. Add Shop Bank Account
+Endpoint: POST /seller/shop/bank_account/:id
+Headers: Authorization: Bearer <token>
+Params: id - Shop ID
+Request Body:
+{
+  "Card_Number": "4111111111111111",
+  "Name_On_Card": "Seller Name",
+  "Expiray_Month": "12",
+  "Expiray_Year": "2025"
+}
+
+6. Add Product
+Endpoint: POST /seller/shop/addproduct/:id
+Headers: Authorization: Bearer <token>
+Params: id - Shop ID
+Request Body:
+{
+  "Product_name": "Premium Product",
+  "Description": "High quality product description",
+  "Price": 99.99,
+  "Stock": 100,
+  "Category_id": 1
+}
+
+7. Edit Product
+Endpoint: PUT /seller/products/:productId
+Headers: Authorization: Bearer <token>
+Params: productId - Product ID
+Request Body:
+{
+  "Product_name": "Updated Product Name",
+  "Description": "Updated description",
+  "Price": 89.99,
+  "Stock": 50,
+  "Category_id": 2
+}
+
+================================================================================
+PRODUCT MANAGEMENT
+================================================================================
+
+1. Get All Products
+Endpoint: GET /products
+Headers: Authorization: Bearer <token>
+Success Response (200):
+{
+  "products": [
+    {
+      "Product_id": 1,
+      "Shop_id": 1,
+      "Category_id": 1,
+      "Product_name": "Premium Product",
+      "Description": "Product description",
+      "Price": 99.99,
+      "Stock": 100,
+      "shop": {
+        "Shop_name": "My Awesome Shop"
+      },
+      "category": {
+        "Name": "Electronics"
+      }
+    }
+  ]
+}
+
+2. Get Product by ID
+Endpoint: GET /product/:id
+Headers: Authorization: Bearer <token>
+Params: id - Product ID
+Success Response (200):
+{
+  "product": {
+    "Product_id": 1,
+    "Shop_id": 1,
+    "Category_id": 1,
+    "Product_name": "Premium Product",
+    "Description": "Product description",
+    "Price": 99.99,
+    "Stock": 100,
+    "shop": {
+      "Shop_name": "My Awesome Shop"
+    }
+  }
+}
+
+3. Get Products by Shop ID
+Endpoint: GET /shop/products/:id
+Headers: Authorization: Bearer <token>
+Params: id - Shop ID
+Success Response (200):
+{
+  "products": [
+    {
+      "Product_id": 1,
+      "Shop_id": 1,
+      "Category_id": 1,
+      "Product_name": "Premium Product",
+      "Description": "Product description",
+      "Price": 99.99,
+      "Stock": 100,
+      "category": {
+        "Name": "Electronics"
+      }
+    }
+  ]
+}
+
+================================================================================
+SHOP MANAGEMENT
+================================================================================
+
+1. Get All Shops
+Endpoint: GET /shops
+Headers: Authorization: Bearer <token>
+Success Response (200):
+{
+  "shops": [
+    {
+      "Shop_id": 1,
+      "Shop_name": "My Awesome Shop",
+      "Email": "shop@example.com",
+      "Website": "https://myawesomeshop.com",
+      "OwnerId": 1,
+      "owner": {
+        "Full_Name": "Seller Name",
+        "Email": "seller@example.com",
+        "Phone": "1234567890"
+      },
+      "shop_location": [
+        {
+          "Location_id": 1,
+          "Shop_id": 1,
+          "Location": "123 Main St, City, Country"
+        }
+      ],
+      "shop_phone": [
+        {
+          "Phone_id": 1,
+          "Shop_id": 1,
+          "Phone": "+1234567890"
+        }
+      ],
+      "product": [
+        {
+          "Product_id": 1,
+          "Shop_id": 1,
+          "Category_id": 1,
+          "Product_name": "Premium Product",
+          "Description": "Product description",
+          "Price": 99.99,
+          "Stock": 100
+        }
+      ]
+    }
+  ]
+}
+
+2. Get Shop by ID
+Endpoint: GET /shop/:id
+Headers: Authorization: Bearer <token>
+Params: id - Shop ID
+Success Response (200):
+{
+  "shop": {
+    "Shop_id": 1,
+    "Shop_name": "My Awesome Shop",
+    "Email": "shop@example.com",
+    "Website": "https://myawesomeshop.com",
+    "OwnerId": 1,
+    "owner": {
+      "Full_Name": "Seller Name",
+      "Email": "seller@example.com",
+      "Phone": "1234567890"
+    },
+    "shop_location": [
+      {
+        "Location_id": 1,
+        "Shop_id": 1,
+        "Location": "123 Main St, City, Country"
+      }
+    ],
+    "shop_phone": [
+      {
+        "Phone_id": 1,
+        "Shop_id": 1,
+        "Phone": "+1234567890"
+      }
+    ],
+    "product": [
+      {
+        "Product_id": 1,
+        "Shop_id": 1,
+        "Category_id": 1,
+        "Product_name": "Premium Product",
+        "Description": "Product description",
+        "Price": 99.99,
+        "Stock": 100
+      }
+    ]
+  }
+}
+
+================================================================================
+USER FUNCTIONS
+================================================================================
+
+1. Add Credit Card
+Endpoint: POST /add/creditCard
+Headers: Authorization: Bearer <token>
+Request Body:
+{
+  "Card_Number": "4111111111111111",
+  "Name_On_Card": "John Doe",
+  "Expiray_Month": "12",
+  "Expiray_Year": "2025"
+}
+
+Success Response (201):
+{
+  "message": "Credit card saved successfully.",
+  "card": {
+    "Account_id": 1,
+    "UserId": 1,
+    "Card_Number": "4111111111111111",
+    "Name_On_Card": "John Doe",
+    "Expiray_Month": "12",
+    "Expiray_Year": "2025"
+  }
+}
+
+2. Get Credit Cards
+Endpoint: GET /creditCard
+Headers: Authorization: Bearer <token>
+Success Response (200):
+{
+  "cards": [
+    {
+      "Card_Number": "4111111111111111",
+      "Name_On_Card": "John Doe",
+      "Expiray_Month": "12",
+      "Expiray_Year": "2025"
+    }
+  ]
+}
+
+3. Add to Cart
+Endpoint: POST /addcart
+Headers: Authorization: Bearer <token>
+Request Body:
+{
+  "productId": 1,
+  "quantity": 2
+}
+
+Success Response (201):
+{
+  "message": "Product added to cart.",
+  "cartItem": {
+    "Cart_id": 1,
+    "User_id": 1,
+    "Product_id": 1,
+    "Quantity": 2,
+    "Added_At": "2023-05-01T12:00:00Z"
+  }
+}
+
+4. Get Cart Items
+Endpoint: GET /cart
+Headers: Authorization: Bearer <token>
+Success Response (200):
+{
+  "cartItems": [
+    {
+      "Cart_id": 1,
+      "User_id": 1,
+      "Product_id": 1,
+      "Quantity": 2,
+      "Added_At": "2023-05-01T12:00:00Z",
+      "product": {
+        "Product_name": "Premium Product",
+        "Price": 99.99,
+        "Description": "Product description"
+      }
+    }
+  ]
+}
+
+================================================================================
+ERROR HANDLING
+================================================================================
+
+All endpoints may return the following error responses:
+
+- 400 Bad Request: Invalid or missing parameters
+- 401 Unauthorized: Invalid credentials or missing authentication token
+- 403 Forbidden: Authenticated user doesn't have permission
+- 404 Not Found: Requested resource not found
+- 500 Internal Server Error: Server-side error
+
+Error response format:
+{
+  "message": "Error description"
+}
